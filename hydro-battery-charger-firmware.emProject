@@ -73,4 +73,9 @@
     gcc_debugging_level="None"
     gcc_omit_frame_pointer="Yes"
     gcc_optimization_level="Level 1" />
+  <configuration
+    Name="Common"
+    gcc_c_language_standard="c11"
+    gcc_cplusplus_language_standard="c++11"
+    gcc_enable_all_warnings="Yes" />
 </solution>
