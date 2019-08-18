@@ -85,5 +85,7 @@
     Name="Common"
     gcc_c_language_standard="c11"
     gcc_cplusplus_language_standard="c++11"
-    gcc_enable_all_warnings="Yes" />
+    gcc_enable_all_warnings="Yes"
+    linker_printf_fp_enabled="Float"
+    linker_printf_width_precision_supported="No" />
 </solution>
