@@ -10,23 +10,22 @@
 #include "watchdog.h"
 
 // PWM parameters
-static const float PWM_DUTY_CYCLE_STEPS = 0.01F;
-static const float PWM_DUTY_CYCLE_MIN   = 0.0F;
-static const float PWM_DUTY_CYCLE_MAX   = 0.99F;
+static const float PWM_DUTY_CYCLE_STEPS = 0.01F;  // [1]
+static const float PWM_DUTY_CYCLE_MIN   = 0.01F;  // [1]
+static const float PWM_DUTY_CYCLE_MAX   = 0.99F;  // [1]
 
 // start charging parameters
-static const float START_VGEN_MIN      = 25.0F;  // [V]
+static const float START_VGEN_MIN      = 28.0F;  // [V]
 static const float START_VDC_MAX       = 3.0F;   // [V]
-static const float START_VBAT_MIN      = 23.0F;  // [V]
-static const float START_VBAT_MAX      = 27.5F;  // [V]
+static const float START_VBAT_MIN      = 22.0F;  // [V]
+static const float START_VBAT_MAX      = 27.0F;  // [V]
 static const float START_PWM_DUTYCYCLE = 0.01F;  // [1]
 
 // charging parameters
-static const float CHARGE_IBAT_MIN = 0.05F;  // [A]
-static const float CHARGE_VDC_MIN  = 23.0F;  // [V]
+static const float CHARGE_VDC_MIN  = 22.0F;  // [V]
 static const float CHARGE_VBAT_MAX = 27.5F;  // [V]
 static const float CHARGE_PWM_STEP = 0.01F;  // [1]
-static const float CHARGE_PWM_MIN  = 0.05F;  // [1]
+static const float CHARGE_PWM_MIN  = 0.09F;  // [1]
 
 Application::Application(System& system, Adc& adc, AnalogIn& vgen,
                          AnalogIn& vdc, AnalogIn& vbat, AnalogIn& ibat,
@@ -96,8 +95,7 @@ void Application::process() {
       UpdateDisplay("Charge 1/2");
       mSystem.delay(500UL);
       Watchdog::reset();
-    } while ((mMeasuredIbat > CHARGE_IBAT_MIN) &&
-             (mMeasuredVdc > CHARGE_VDC_MIN) &&
+    } while ((mMeasuredVdc > CHARGE_VDC_MIN) &&
              (mMeasuredVbat < CHARGE_VBAT_MAX));
 
     // charge CV
@@ -110,8 +108,7 @@ void Application::process() {
       UpdateDisplay("Charge 2/2");
       mSystem.delay(500UL);
       Watchdog::reset();
-    } while ((mMeasuredIbat > CHARGE_IBAT_MIN) &&
-             (mMeasuredVdc > CHARGE_VDC_MIN) &&
+    } while ((mMeasuredVdc > CHARGE_VDC_MIN) &&
              (mPwmDutyCycle > CHARGE_PWM_MIN));
 
     // stop charging
