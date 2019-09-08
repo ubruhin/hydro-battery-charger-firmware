@@ -73,8 +73,13 @@ int main(void) {
   // Application
   Application application(system, adc, vgen, vdc, vbat, ibat, chargeEnable, pwm,
                           pot, button1, button2, ledGreen, ledRed, display);
+  if (system.GetWokeUpFromWatchdog()) {
+    application.runChargeMode();
+  } else {
+    application.runDisplayMode();
+  }
 
+  // this line should actually never be reached... if it is, watchdog will reset
   while (1) {
-    application.process();
   }
 }

@@ -15,9 +15,12 @@ public:
               Pwm& pwm, AnalogIn& pot, DigitalIn& button1, DigitalIn& button2,
               DigitalOut& ledGreen, DigitalOut& ledRed, Display& display);
 
-  void process();
+  void runDisplayMode();
+  void runChargeMode();
 
 private:
+  void Enter();
+  void Exit();
   void Measure();
   void SetPwmDutyCycle(float value);
   void UpdateDisplay(const char* msg);

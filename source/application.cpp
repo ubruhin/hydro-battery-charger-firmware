@@ -55,25 +55,29 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
     mPwmDutyCycle(0.0F) {
 }
 
-void Application::process() {
-  mLedGreen.setHigh();
+void Application::runDisplayMode() {
+  Enter();
+  mDisplay.switchOn();
 
-  mAdc.enable();
-  Measure();
-
-  // update display for 10s
-  while (mButton1.read() == false) {
-    mDisplay.switchOn();
+  do {
+    // update display for 10s
     for (int i = 0; i < 20; i++) {
       Measure();
       UpdateDisplay("OFF");
       mSystem.delay(500UL);
       Watchdog::reset();
     }
-    mDisplay.switchOff();
-  }
+  } while (mButton1.read() == false);
+
+  mDisplay.switchOff();
+  Exit();
+}
+
+void Application::runChargeMode() {
+  Enter();
 
   // check voltages
+  Measure();
   if ((mMeasuredVgen > START_VGEN_MIN) && (mMeasuredVdc < START_VDC_MAX) &&
       (mMeasuredVbat > START_VBAT_MIN) && (mMeasuredVbat < START_VBAT_MAX)) {
     // start charging
@@ -118,6 +122,15 @@ void Application::process() {
     mDisplay.switchOff();
   }
 
+  Exit();
+}
+
+void Application::Enter() {
+  mLedGreen.setHigh();
+  mAdc.enable();
+}
+
+void Application::Exit() {
   mAdc.disable();
   mLedGreen.setLow();
   mSystem.sleep();
