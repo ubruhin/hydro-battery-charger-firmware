@@ -6,7 +6,7 @@ Pwm::Pwm(TIM_TypeDef* timer, uint32_t channel)
   LL_TIM_StructInit(&params);
   params.Prescaler     = (uint16_t)0x0000;
   params.CounterMode   = LL_TIM_COUNTERMODE_CENTER_UP_DOWN;
-  params.Autoreload    = 200UL;
+  params.Autoreload    = 500UL;
   params.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   LL_TIM_Init(mTimer, &params);
 
