@@ -62,7 +62,7 @@ void Application::process() {
   Measure();
 
   // update display for 10s
-  if (mButton1.read() == false) {
+  while (mButton1.read() == false) {
     mDisplay.switchOn();
     for (int i = 0; i < 20; i++) {
       Measure();
