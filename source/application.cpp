@@ -127,7 +127,7 @@ void Application::Measure() {
   mMeasuredIbat          = mIbat.measure();
   mMeasuredVgen          = mVgen.measure();
   mMeasuredVdc           = mVdc.measure();
-  mMeasuredVbat          = mVbat.measure() + (0.1F * mMeasuredIbat);
+  mMeasuredVbat          = mVbat.measure() - (0.1F * mMeasuredIbat);
   mMeasuredPotentiometer = mPotentiometer.measure();
 }
 
