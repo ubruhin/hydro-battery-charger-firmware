@@ -5,7 +5,7 @@
 #include "stm32l0xx_ll_rcc.h"
 #include "watchdog.h"
 
-System::System() {
+System::System() : mWokeUpFromWatchdog(false) {
   // Enable LSI and watchdog
   LL_RCC_LSI_Enable();
   while (!LL_RCC_LSI_IsReady())
@@ -47,6 +47,10 @@ System::System() {
 
   // Enable TIM2 clock
   RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+  // Detect & reset wakeup reason
+  mWokeUpFromWatchdog = LL_RCC_IsActiveFlag_IWDGRST();
+  LL_RCC_ClearResetFlags();
 }
 
 #pragma GCC push_options
