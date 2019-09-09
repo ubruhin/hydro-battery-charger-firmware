@@ -120,7 +120,8 @@ void Application::runChargeMode() {
     } while ((mMeasuredVdc > CHARGE_VDC_MIN) &&
              (mMeasuredVbat < CHARGE_VBAT_EMERGENCY_OFF) &&
              ((mIncreasingDutyCycle) || (mPwmDutyCycle > CHARGE_PWM_MIN)) &&
-             ((mIncreasingDutyCycle) || (mMeasuredIbat < CHARGE_IBAT_MIN)));
+             ((mIncreasingDutyCycle) || (mMeasuredIbat < CHARGE_IBAT_MIN)) &&
+             (mButton2.read() == true));
 
     // stop charging
     mPwm.disable();
