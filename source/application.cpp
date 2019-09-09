@@ -15,7 +15,7 @@ static const float PWM_DUTY_CYCLE_MIN   = 0.05F;  // [1]
 static const float PWM_DUTY_CYCLE_MAX   = 0.99F;  // [1]
 
 // start charging parameters
-static const float START_VGEN_MIN      = 28.0F;  // [V]
+static const float START_VGEN_MIN      = 30.0F;  // [V]
 static const float START_VDC_MAX       = 3.0F;   // [V]
 static const float START_VBAT_MIN      = 22.0F;  // [V]
 static const float START_VBAT_MAX      = 27.0F;  // [V]
