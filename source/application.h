@@ -46,5 +46,6 @@ private:
   float mMeasuredIbat;
   float mMeasuredPotentiometer;
 
+  bool  mIncreasingDutyCycle;
   float mPwmDutyCycle;
 };

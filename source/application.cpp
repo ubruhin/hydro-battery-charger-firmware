@@ -22,10 +22,13 @@ static const float START_VBAT_MAX      = 27.0F;  // [V]
 static const float START_PWM_DUTYCYCLE = 0.2F;   // [1]
 
 // charging parameters
-static const float CHARGE_VDC_MIN  = 22.0F;  // [V]
-static const float CHARGE_VBAT_MAX = 27.5F;  // [V]
-static const float CHARGE_PWM_STEP = 0.01F;  // [1]
-static const float CHARGE_PWM_MIN  = 0.09F;  // [1]
+static const float CHARGE_VDC_MIN            = 22.0F;  // [V]
+static const float CHARGE_IBAT_MIN           = 0.1F;   // [A]
+static const float CHARGE_VBAT_MIN           = 27.2F;  // [V]
+static const float CHARGE_VBAT_MAX           = 27.5F;  // [V]
+static const float CHARGE_VBAT_EMERGENCY_OFF = 27.9F;  // [V]
+static const float CHARGE_PWM_STEP           = 0.01F;  // [1]
+static const float CHARGE_PWM_MIN            = 0.09F;  // [1]
 
 Application::Application(System& system, Adc& adc, AnalogIn& vgen,
                          AnalogIn& vdc, AnalogIn& vbat, AnalogIn& ibat,
@@ -52,6 +55,7 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
     mMeasuredVbat(0.0F),
     mMeasuredIbat(0.0F),
     mMeasuredPotentiometer(0.0F),
+    mIncreasingDutyCycle(true),
     mPwmDutyCycle(0.0F) {
 }
 
@@ -92,28 +96,31 @@ void Application::runChargeMode() {
       Watchdog::reset();
     }
 
-    // charge CC
+    // charge
     do {
       Measure();
-      SetPwmDutyCycle(mMeasuredPotentiometer);
-      UpdateDisplay("Charge 1/2");
-      mSystem.delay(500UL);
-      Watchdog::reset();
-    } while ((mMeasuredVdc > CHARGE_VDC_MIN) &&
-             (mMeasuredVbat < CHARGE_VBAT_MAX));
-
-    // charge CV
-    do {
-      mLedRed.toggle();
-      Measure();
-      if (mMeasuredVbat > CHARGE_VBAT_MAX) {
-        SetPwmDutyCycle(mPwmDutyCycle - CHARGE_PWM_STEP);
+      if (mIncreasingDutyCycle) {
+        mLedRed.setHigh();
+        if (mMeasuredVbat < CHARGE_VBAT_MAX) {
+          SetPwmDutyCycle(mMeasuredPotentiometer);
+        } else {
+          mIncreasingDutyCycle = false;
+        }
+      } else {
+        mLedRed.toggle();
+        if (mMeasuredVbat > CHARGE_VBAT_MAX) {
+          SetPwmDutyCycle(mPwmDutyCycle - CHARGE_PWM_STEP);
+        } else if (mMeasuredVbat < CHARGE_VBAT_MIN) {
+          mIncreasingDutyCycle = true;
+        }
       }
-      UpdateDisplay("Charge 2/2");
+      UpdateDisplay("Charge...");
       mSystem.delay(500UL);
       Watchdog::reset();
     } while ((mMeasuredVdc > CHARGE_VDC_MIN) &&
-             (mPwmDutyCycle > CHARGE_PWM_MIN));
+             (mMeasuredVbat < CHARGE_VBAT_EMERGENCY_OFF) &&
+             ((mIncreasingDutyCycle) || (mPwmDutyCycle > CHARGE_PWM_MIN)) &&
+             ((mIncreasingDutyCycle) || (mMeasuredIbat < CHARGE_IBAT_MIN)));
 
     // stop charging
     mPwm.disable();
@@ -133,6 +140,7 @@ void Application::Enter() {
 void Application::Exit() {
   mAdc.disable();
   mLedGreen.setLow();
+  mLedRed.setLow();
   mSystem.sleep();
 }
 
