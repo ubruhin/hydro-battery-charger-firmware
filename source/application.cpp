@@ -124,7 +124,8 @@ void Application::runChargeMode() {
 
     // stop charging
     mPwm.disable();
-    System::delay(500UL);  // avoid overvoltage due to energy in coil
+    UpdateDisplay("Finished!");
+    System::delay(5000UL);  // avoid overvoltage due to energy in coil
     mChargeEnable.setLow();
     mDisplay.switchOff();
   }
