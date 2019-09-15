@@ -73,7 +73,7 @@ int main(void) {
   // Application
   Application application(system, adc, vgen, vdc, vbat, ibat, chargeEnable, pwm,
                           pot, button1, button2, ledGreen, ledRed, display);
-  if (system.GetWokeUpFromWatchdog()) {
+  if (system.GetWokeUpFromWatchdog() && (button1.read() == true)) {
     application.runChargeMode();
   } else {
     application.runDisplayMode();
