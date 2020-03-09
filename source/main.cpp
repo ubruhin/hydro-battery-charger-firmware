@@ -4,9 +4,9 @@
 #include "comparator.h"
 #include "digitalin.h"
 #include "digitalout.h"
-#include "display.h"
 #include "pwm.h"
 #include "spi.h"
+#include "spi_display.h"
 #include "system.h"
 
 static const float VDC_R2     = (4.7F * 100.0F) / (4.7F + 100.0F);
@@ -60,7 +60,7 @@ int main(void) {
   DigitalOut displayCs(GPIOA, LL_GPIO_PIN_8, false);
   DigitalOut displayNrst(GPIOA, LL_GPIO_PIN_9, false);
   DigitalOut displayEnable(GPIOA, LL_GPIO_PIN_10, true);
-  Display    display(spi, displayCs, displayEnable, displayNrst);
+  SpiDisplay display(spi, displayCs, displayEnable, displayNrst);
 
   // Unused pins
   LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_6, LL_GPIO_MODE_ANALOG);

@@ -1,4 +1,4 @@
-#include "display.h"
+#include "spi_display.h"
 
 #include "digitalout.h"
 #include "spi.h"
@@ -7,12 +7,16 @@
 #include <cstdio>
 #include <cstring>
 
-Display::Display(Spi& spi, DigitalOut& chipSelect, DigitalOut& enable,
-                 DigitalOut& nrst)
-  : mSpi(spi), mChipSelect(chipSelect), mEnable(enable), mNrst(nrst) {
+SpiDisplay::SpiDisplay(Spi& spi, DigitalOut& chipSelect, DigitalOut& enable,
+                       DigitalOut& nrst)
+  : Display(),
+    mSpi(spi),
+    mChipSelect(chipSelect),
+    mEnable(enable),
+    mNrst(nrst) {
 }
 
-void Display::switchOn() {
+void SpiDisplay::switchOn() {
   mEnable.setLow();
   mSpi.enable();
   mNrst.setLow();
@@ -34,17 +38,23 @@ void Display::switchOn() {
   writeCmd(0x0C);  // Display ON
 }
 
-void Display::switchOff() {
+void SpiDisplay::switchOff() {
   mNrst.setLow();
   mSpi.disable();
   mEnable.setHigh();
 }
 
-void Display::clear() {
+void SpiDisplay::backlightOn() {
+}
+
+void SpiDisplay::backlightOff() {
+}
+
+void SpiDisplay::clear() {
   writeCmd(0x01);
 }
 
-void Display::print(uint8_t row, uint8_t col, const char* format, ...) {
+void SpiDisplay::print(uint8_t row, uint8_t col, const char* format, ...) {
   va_list args;
   va_start(args, format);
   move(row, col);
@@ -52,11 +62,11 @@ void Display::print(uint8_t row, uint8_t col, const char* format, ...) {
   va_end(args);
 }
 
-void Display::move(uint8_t row, uint8_t col) {
+void SpiDisplay::move(uint8_t row, uint8_t col) {
   writeCmd(0x80 | (col + row * 0x20));
 }
 
-void Display::print(const char* format, va_list args) {
+void SpiDisplay::print(const char* format, va_list args) {
   char buf[21];
   int  len = std::vsnprintf(buf, sizeof(buf), format, args);
   if (len > 20) {
@@ -67,17 +77,17 @@ void Display::print(const char* format, va_list args) {
   writeData(reinterpret_cast<const uint8_t*>(buf), len);
 }
 
-void Display::writeData(const uint8_t* data, uint32_t len) {
+void SpiDisplay::writeData(const uint8_t* data, uint32_t len) {
   write(STARTBYTE | FLAG_RS, data, len);
 }
 
-void Display::writeCmd(uint8_t cmd) {
+void SpiDisplay::writeCmd(uint8_t cmd) {
   write(STARTBYTE, &cmd, 1U);
   while (readStatus() & FLAG_BUSY)
     ;
 }
 
-void Display::write(uint8_t header, const uint8_t* data, uint32_t len) {
+void SpiDisplay::write(uint8_t header, const uint8_t* data, uint32_t len) {
   mChipSelect.setLow();
   mSpi.transceive(1U, &header, nullptr);
   for (uint32_t i = 0U; i < len; ++i) {
@@ -88,7 +98,7 @@ void Display::write(uint8_t header, const uint8_t* data, uint32_t len) {
   mChipSelect.setHigh();
 }
 
-uint8_t Display::readStatus() {
+uint8_t SpiDisplay::readStatus() {
   uint8_t tx[] = {STARTBYTE | FLAG_RW, 0x00};
   uint8_t rx[] = {0x00, 0x00};
   mChipSelect.setLow();
