@@ -48,6 +48,9 @@ System::System() : mWokeUpFromWatchdog(false) {
   // Enable TIM2 clock
   RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 
+  // Enable PWR clock
+  RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
   // Detect & reset wakeup reason
   mWokeUpFromWatchdog = LL_RCC_IsActiveFlag_IWDGRST();
   LL_RCC_ClearResetFlags();
