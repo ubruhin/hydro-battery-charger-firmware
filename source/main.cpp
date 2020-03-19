@@ -4,9 +4,10 @@
 #include "comparator.h"
 #include "digitalin.h"
 #include "digitalout.h"
+#include "input_edge_counter.h"
 #include "pwm.h"
-#include "spi.h"
-#include "spi_display.h"
+#include "rpm_measurement.h"
+#include "st7066u_display.h"
 #include "system.h"
 
 static const float VDC_R2     = (4.7F * 100.0F) / (4.7F + 100.0F);
@@ -38,42 +39,46 @@ int main(void) {
   // Comparator
   Comparator comparator(COMP1, LL_COMP_INPUT_PLUS_IO1, &comparatorCallback);
 
+  // RPM measurement
+  DigitalIn        rpmMeasurementPin(GPIOA, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN);
+  InputEdgeCounter rpmEdgeCounter(LL_EXTI_LINE_6);
+  RpmMeasurement   rpmMeasurement(rpmEdgeCounter);
+
   // Charge controller
   Pwm pwm(TIM2, LL_TIM_CHANNEL_CH1);
   sPwm = &pwm;
   DigitalOut pwmOut(GPIOA, LL_GPIO_PIN_15, false, LL_GPIO_AF_5);
-  DigitalOut chargeEnable(GPIOA, LL_GPIO_PIN_11, false);
+  DigitalOut chargeEnable(GPIOB, LL_GPIO_PIN_7, false);
 
   // Buttons/LEDs
-  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_UP);
-  DigitalIn  button2(GPIOA, LL_GPIO_PIN_12, LL_GPIO_PULL_UP);
-  DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_0, false);
-  DigitalOut ledRed(GPIOB, LL_GPIO_PIN_1, false);
-
-  // SPI
-  Spi        spi(SPI1);
-  DigitalOut spiSclk(GPIOB, LL_GPIO_PIN_3, true, LL_GPIO_AF_0);
-  DigitalOut spiMiso(GPIOB, LL_GPIO_PIN_4, true, LL_GPIO_AF_0);
-  DigitalOut spiMosi(GPIOB, LL_GPIO_PIN_5, true, LL_GPIO_AF_0);
+  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_DOWN);
+  DigitalIn  button2(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN);
+  DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_4, false);
+  DigitalOut ledYellow(GPIOB, LL_GPIO_PIN_5, false);
 
   // Display
-  DigitalOut displayCs(GPIOA, LL_GPIO_PIN_8, false);
-  DigitalOut displayNrst(GPIOA, LL_GPIO_PIN_9, false);
-  DigitalOut displayEnable(GPIOA, LL_GPIO_PIN_10, true);
-  SpiDisplay display(spi, displayCs, displayEnable, displayNrst);
+  DigitalOut     displayPower(GPIOB, LL_GPIO_PIN_0, true);
+  DigitalOut     displayRS(GPIOB, LL_GPIO_PIN_1, false);
+  DigitalOut     displayRW(GPIOA, LL_GPIO_PIN_8, false);
+  DigitalOut     displayEnable(GPIOA, LL_GPIO_PIN_9, false);
+  DigitalOut     displayDB4(GPIOA, LL_GPIO_PIN_10, false);
+  DigitalOut     displayDB5(GPIOA, LL_GPIO_PIN_11, false);
+  DigitalOut     displayDB6(GPIOA, LL_GPIO_PIN_12, false);
+  DigitalOut     displayDB7(GPIOB, LL_GPIO_PIN_3, false);
+  DigitalOut     displayBacklight(GPIOA, LL_GPIO_PIN_7, false);
+  ST7066UDisplay display(displayPower, displayRS, displayRW, displayEnable,
+                         displayDB4, displayDB5, displayDB6, displayDB7,
+                         displayBacklight);
 
   // Unused pins
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_6, LL_GPIO_MODE_ANALOG);
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_7, LL_GPIO_MODE_ANALOG);
-  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_ANALOG);
-  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_7, LL_GPIO_MODE_ANALOG);
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_14, LL_GPIO_MODE_ANALOG);
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG);
 
   // Application
-  Application application(system, adc, vgen, vdc, vbat, ibat, chargeEnable, pwm,
-                          pot, button1, button2, ledGreen, ledRed, display);
-  if (system.GetWokeUpFromWatchdog() && (button1.read() == true)) {
+  Application application(system, adc, vgen, vdc, vbat, ibat, rpmMeasurement,
+                          chargeEnable, pwm, pot, button1, button2, ledGreen,
+                          ledYellow, display);
+  if (system.GetWokeUpFromWatchdog() && (button1.read() == false)) {
     application.runChargeMode();
   } else {
     application.runDisplayMode();

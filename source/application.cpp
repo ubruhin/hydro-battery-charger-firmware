@@ -6,6 +6,7 @@
 #include "digitalout.h"
 #include "display.h"
 #include "pwm.h"
+#include "rpm_measurement.h"
 #include "system.h"
 #include "watchdog.h"
 
@@ -32,6 +33,7 @@ static const float CHARGE_PWM_MIN            = 0.09F;  // [1]
 
 Application::Application(System& system, Adc& adc, AnalogIn& vgen,
                          AnalogIn& vdc, AnalogIn& vbat, AnalogIn& ibat,
+                         RpmMeasurement& rpmMeasurement,
                          DigitalOut& chargeEnable, Pwm& pwm, AnalogIn& pot,
                          DigitalIn& button1, DigitalIn& button2,
                          DigitalOut& ledGreen, DigitalOut& ledRed,
@@ -42,6 +44,7 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
     mVdc(vdc),
     mVbat(vbat),
     mIbat(ibat),
+    mRpmMeasurement(rpmMeasurement),
     mChargeEnable(chargeEnable),
     mPwm(pwm),
     mPotentiometer(pot),
@@ -61,7 +64,9 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
 
 void Application::runDisplayMode() {
   Enter();
+  mRpmMeasurement.enable();
   mDisplay.switchOn();
+  mDisplay.backlightOn();
 
   do {
     // update display for 10s
@@ -71,9 +76,11 @@ void Application::runDisplayMode() {
       mSystem.delay(500UL);
       Watchdog::reset();
     }
-  } while (mButton1.read() == false);
+  } while (mButton1.read() == true);
 
+  mDisplay.backlightOff();
   mDisplay.switchOff();
+  mRpmMeasurement.disable();
   Exit();
 }
 
@@ -85,7 +92,9 @@ void Application::runChargeMode() {
   if ((mMeasuredVgen > START_VGEN_MIN) && (mMeasuredVdc < START_VDC_MAX) &&
       (mMeasuredVbat > START_VBAT_MIN) && (mMeasuredVbat < START_VBAT_MAX)) {
     // start charging
+    mRpmMeasurement.enable();
     mDisplay.switchOn();
+    mDisplay.backlightOn();
     mChargeEnable.setHigh();
     mPwm.enable();
     for (int i = 0; i < 20; i++) {
@@ -121,14 +130,16 @@ void Application::runChargeMode() {
              (mMeasuredVbat < CHARGE_VBAT_EMERGENCY_OFF) &&
              ((mIncreasingDutyCycle) || (mPwmDutyCycle > CHARGE_PWM_MIN)) &&
              ((mIncreasingDutyCycle) || (mMeasuredIbat > CHARGE_IBAT_MIN)) &&
-             (mButton2.read() == true));
+             (mButton2.read() == false));
 
     // stop charging
     mPwm.disable();
     UpdateDisplay("Finished!");
     System::delay(5000UL);  // avoid overvoltage due to energy in coil
     mChargeEnable.setLow();
+    mDisplay.backlightOff();
     mDisplay.switchOff();
+    mRpmMeasurement.disable();
   }
 
   Exit();
@@ -174,10 +185,10 @@ void Application::SetPwmDutyCycle(float value) {
 }
 
 void Application::UpdateDisplay(const char* msg) {
-  mDisplay.clear();
-  mDisplay.print(0, 0, "%3.0fV %4.1fV", mMeasuredVgen, mMeasuredVbat);
-  mDisplay.print(1, 0, "%3.0f%% %4.1fV", mPwmDutyCycle * 100.0F, mMeasuredVdc);
-  mDisplay.print(2, 0, "%4.2fA %3.0fW", mMeasuredIbat,
-                 mMeasuredVbat * mMeasuredIbat);
-  mDisplay.print(3, 0, msg);
+  mDisplay.print(0, 0, "RPM%5d | GEN%5.1fV", mRpmMeasurement.getRpm(),
+                 mMeasuredVgen);
+  mDisplay.print(1, 0, "PWM%4.0f%% | VDC%5.1fV", mPwmDutyCycle * 100.0F,
+                 mMeasuredVdc);
+  mDisplay.print(2, 0, "CUR%4.1fA | BAT%5.1fV", mMeasuredIbat, mMeasuredVbat);
+  mDisplay.print(3, 0, "PWR%4.0fW | %9s", mMeasuredVbat * mMeasuredIbat, msg);
 }
