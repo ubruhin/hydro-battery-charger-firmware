@@ -4,7 +4,9 @@ class DigitalIn {
 public:
   DigitalIn()                       = delete;
   DigitalIn(const DigitalIn& other) = delete;
-  DigitalIn(GPIO_TypeDef* gpio, uint32_t pin);
+  DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull);
+  DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull,
+            uint32_t alternateFuntion);
 
   bool read();
 

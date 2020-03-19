@@ -45,8 +45,8 @@ int main(void) {
   DigitalOut chargeEnable(GPIOA, LL_GPIO_PIN_11, false);
 
   // Buttons/LEDs
-  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0);
-  DigitalIn  button2(GPIOA, LL_GPIO_PIN_12);
+  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_UP);
+  DigitalIn  button2(GPIOA, LL_GPIO_PIN_12, LL_GPIO_PULL_UP);
   DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_0, false);
   DigitalOut ledRed(GPIOB, LL_GPIO_PIN_1, false);
 
