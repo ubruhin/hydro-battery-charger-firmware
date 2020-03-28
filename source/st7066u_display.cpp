@@ -154,6 +154,5 @@ void ST7066UDisplay::sendEnablePulse() {
 }
 
 uint8_t ST7066UDisplay::readStatus() {
-  mRW.setHigh();
   return 0x00U;  // Not supported yet
 }
