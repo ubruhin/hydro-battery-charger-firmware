@@ -72,7 +72,7 @@ void Application::runDisplayMode() {
     // update display for 10s
     for (int i = 0; i < 20; i++) {
       Measure();
-      UpdateDisplay("OFF");
+      UpdateDisplay("U. Bruhin");
       mSystem.delay(500UL);
       Watchdog::reset();
     }
