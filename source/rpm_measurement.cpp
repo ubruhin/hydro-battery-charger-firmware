@@ -26,7 +26,7 @@ void RpmMeasurement::disable() {
 void RpmMeasurement::sysTick() {
   ++mTimeMs;
   if (mTimeMs >= 1000UL) {
-    mRpm    = mCounter.getValueAndReset() * 60UL;
+    mRpm    = mCounter.getValueAndReset() * 60UL / 14UL;
     mTimeMs = 0U;
   }
 }
