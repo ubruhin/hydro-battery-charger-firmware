@@ -25,7 +25,7 @@ private:
   void Exit();
   void Measure();
   void SetPwmDutyCycle(float value);
-  void UpdateDisplay(const char* msg);
+  void UpdateDisplay(const char* msg, bool displayPotentiometer = false);
 
   System&         mSystem;
   Adc&            mAdc;

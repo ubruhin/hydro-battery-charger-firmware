@@ -72,7 +72,7 @@ void Application::runDisplayMode() {
     // update display for 10s
     for (int i = 0; i < 20; i++) {
       Measure();
-      UpdateDisplay("U. Bruhin");
+      UpdateDisplay("U. Bruhin", true);
       mSystem.delay(500UL);
       Watchdog::reset();
     }
@@ -184,11 +184,13 @@ void Application::SetPwmDutyCycle(float value) {
   mPwm.setDutyCycleNormalized(mPwmDutyCycle);
 }
 
-void Application::UpdateDisplay(const char* msg) {
+void Application::UpdateDisplay(const char* msg, bool displayPotentiometer) {
   mDisplay.print(0, 0, "RPM%5d | GEN%5.1fV", mRpmMeasurement.getRpm(),
                  mMeasuredVgen);
-  mDisplay.print(1, 0, "PWM%4.0f%% | VDC%5.1fV", mPwmDutyCycle * 100.0F,
-                 mMeasuredVdc);
+  mDisplay.print(
+      1, 0, "PWM%4.0f%% | VDC%5.1fV",
+      (displayPotentiometer ? mMeasuredPotentiometer : mPwmDutyCycle) * 100.0F,
+      mMeasuredVdc);
   mDisplay.print(2, 0, "CUR%4.1fA | BAT%5.1fV", mMeasuredIbat, mMeasuredVbat);
   mDisplay.print(3, 0, "PWR%4.0fW | %9s", mMeasuredVbat * mMeasuredIbat, msg);
 }
