@@ -148,6 +148,9 @@ void Application::runChargeMode() {
 void Application::Enter() {
   mLedGreen.setHigh();
   mAdc.enable();
+  mIncreasingDutyCycle = true;
+  mPwmDutyCycle        = 0.0F;
+  mPowerOffTimer       = 0U;
 }
 
 void Application::Exit() {
