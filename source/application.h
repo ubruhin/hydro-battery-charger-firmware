@@ -1,3 +1,5 @@
+#include <cstdint>
+
 class Adc;
 class AnalogIn;
 class DigitalIn;
@@ -49,6 +51,7 @@ private:
   float mMeasuredIbat;
   float mMeasuredPotentiometer;
 
-  bool  mIncreasingDutyCycle;
-  float mPwmDutyCycle;
+  bool     mIncreasingDutyCycle;
+  float    mPwmDutyCycle;
+  uint32_t mPowerOffTimer;
 };

@@ -59,7 +59,8 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
     mMeasuredIbat(0.0F),
     mMeasuredPotentiometer(0.0F),
     mIncreasingDutyCycle(true),
-    mPwmDutyCycle(0.0F) {
+    mPwmDutyCycle(0.0F),
+    mPowerOffTimer(0U) {
 }
 
 void Application::runDisplayMode() {
@@ -123,13 +124,17 @@ void Application::runChargeMode() {
           mIncreasingDutyCycle = true;
         }
       }
-      UpdateDisplay("Charge...");
+      UpdateDisplay(mPowerOffTimer ? "Stopping" : "Charge...");
       mSystem.delay(500UL);
       Watchdog::reset();
-    } while ((mMeasuredVdc > CHARGE_VDC_MIN) &&
+
+      if ((mMeasuredVdc < CHARGE_VDC_MIN) ||
+          ((!mIncreasingDutyCycle) && (mPwmDutyCycle < CHARGE_PWM_MIN)) ||
+          ((!mIncreasingDutyCycle) && (mMeasuredIbat < CHARGE_IBAT_MIN))) {
+        mPowerOffTimer++;
+      }
+    } while ((mPowerOffTimer < 20U) &&
              (mMeasuredVbat < CHARGE_VBAT_EMERGENCY_OFF) &&
-             ((mIncreasingDutyCycle) || (mPwmDutyCycle > CHARGE_PWM_MIN)) &&
-             ((mIncreasingDutyCycle) || (mMeasuredIbat > CHARGE_IBAT_MIN)) &&
              (mButton2.read() == false));
 
     // stop charging
