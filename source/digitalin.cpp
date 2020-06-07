@@ -1,7 +1,8 @@
 #include "digitalin.h"
 
-DigitalIn::DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull)
-  : mGpio(gpio), mPinMask(pin) {
+DigitalIn::DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull,
+                     bool invert)
+  : mGpio(gpio), mPinMask(pin), mInvert(invert) {
   LL_GPIO_InitTypeDef params;
   LL_GPIO_StructInit(&params);
   params.Pin        = mPinMask;
@@ -15,7 +16,7 @@ DigitalIn::DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull)
 
 DigitalIn::DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull,
                      uint32_t alternateFunction)
-  : mGpio(gpio), mPinMask(pin) {
+  : mGpio(gpio), mPinMask(pin), mInvert(false) {
   LL_GPIO_InitTypeDef params;
   LL_GPIO_StructInit(&params);
   params.Pin        = mPinMask;
@@ -28,5 +29,6 @@ DigitalIn::DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull,
 }
 
 bool DigitalIn::read() {
-  return (LL_GPIO_ReadInputPort(mGpio) & mPinMask) != 0U;
+  const bool state = (LL_GPIO_ReadInputPort(mGpio) & mPinMask) != 0U;
+  return mInvert ? (!state) : state;
 }

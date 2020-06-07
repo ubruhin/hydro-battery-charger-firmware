@@ -40,7 +40,7 @@ int main(void) {
   Comparator comparator(COMP1, LL_COMP_INPUT_PLUS_IO1, &comparatorCallback);
 
   // RPM measurement
-  DigitalIn        rpmMeasurementPin(GPIOA, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN);
+  DigitalIn rpmMeasurementPin(GPIOA, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN, false);
   InputEdgeCounter rpmEdgeCounter(LL_EXTI_LINE_6);
   RpmMeasurement   rpmMeasurement(rpmEdgeCounter);
 
@@ -51,8 +51,8 @@ int main(void) {
   DigitalOut chargeEnable(GPIOB, LL_GPIO_PIN_7, false);
 
   // Buttons/LEDs
-  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_DOWN);
-  DigitalIn  button2(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN);
+  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_DOWN, false);
+  DigitalIn  button2(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN, false);
   DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_4, false);
   DigitalOut ledYellow(GPIOB, LL_GPIO_PIN_5, false);
 

@@ -6,7 +6,7 @@ class DigitalIn {
 public:
   DigitalIn()                       = delete;
   DigitalIn(const DigitalIn& other) = delete;
-  DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull);
+  DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull, bool invert);
   DigitalIn(GPIO_TypeDef* gpio, uint32_t pin, uint32_t pull,
             uint32_t alternateFuntion);
 
@@ -15,4 +15,5 @@ public:
 private:
   GPIO_TypeDef* mGpio;
   uint32_t      mPinMask;
+  bool          mInvert;
 };
