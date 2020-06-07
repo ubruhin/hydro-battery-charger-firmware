@@ -28,6 +28,8 @@ private:
   void enter();
   void exit();
   void measure();
+  bool checkStartConditions();
+  bool checkChargeConditions();
   void setPwmDutyCycle(float value);
   void updateDisplay(const char* msg, bool displayMode = false);
 
@@ -56,4 +58,5 @@ private:
   bool     mIncreasingDutyCycle;
   float    mPwmDutyCycle;
   uint32_t mPowerOffTimer;
+  char     mMessage[21];
 };

@@ -10,6 +10,9 @@
 #include "system.h"
 #include "watchdog.h"
 
+#include <cstdio>
+#include <cstring>
+
 // PWM parameters
 static const float PWM_DUTY_CYCLE_STEPS = 0.01F;  // [1]
 static const float PWM_DUTY_CYCLE_MIN   = 0.05F;  // [1]
@@ -60,7 +63,8 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
     mMeasuredPotentiometer(0.0F),
     mIncreasingDutyCycle(true),
     mPwmDutyCycle(0.0F),
-    mPowerOffTimer(0U) {
+    mPowerOffTimer(0U),
+    mMessage("") {
 }
 
 void Application::runDisplayMode() {
@@ -73,7 +77,8 @@ void Application::runDisplayMode() {
     // update display for 10s
     for (int i = 0; i < 20; i++) {
       measure();
-      updateDisplay("U. Bruhin", true);
+      checkStartConditions();  // Updates mMessage
+      updateDisplay(mMessage, true);
       mSystem.delay(500UL);
       Watchdog::reset();
     }
@@ -90,8 +95,7 @@ void Application::runChargeMode() {
 
   // check voltages
   measure();
-  if ((mMeasuredVgen > START_VGEN_MIN) && (mMeasuredVdc < START_VDC_MAX) &&
-      (mMeasuredVbat > START_VBAT_MIN) && (mMeasuredVbat < START_VBAT_MAX)) {
+  if (checkStartConditions()) {
     // start charging
     mRpmMeasurement.enable();
     mDisplay.switchOn();
@@ -109,6 +113,11 @@ void Application::runChargeMode() {
     // charge
     do {
       measure();
+      if (checkChargeConditions()) {
+        mPowerOffTimer = 0U;
+      } else {
+        mPowerOffTimer++;
+      }
       if (mIncreasingDutyCycle) {
         mLedRed.setHigh();
         if (mMeasuredVbat < CHARGE_VBAT_MAX) {
@@ -124,15 +133,9 @@ void Application::runChargeMode() {
           mIncreasingDutyCycle = true;
         }
       }
-      updateDisplay(mPowerOffTimer ? "Stopping" : "Charge...");
+      updateDisplay(mMessage);
       mSystem.delay(500UL);
       Watchdog::reset();
-
-      if ((mMeasuredVdc < CHARGE_VDC_MIN) ||
-          ((!mIncreasingDutyCycle) && (mPwmDutyCycle < CHARGE_PWM_MIN)) ||
-          ((!mIncreasingDutyCycle) && (mMeasuredIbat < CHARGE_IBAT_MIN))) {
-        mPowerOffTimer++;
-      }
     } while ((mPowerOffTimer < 20U) &&
              (mMeasuredVbat < CHARGE_VBAT_EMERGENCY_OFF) &&
              (mButton2.read() == false));
@@ -171,6 +174,41 @@ void Application::measure() {
   mMeasuredVdc           = mVdc.measure();
   mMeasuredVbat          = mVbat.measure() - (0.1F * mMeasuredIbat);
   mMeasuredPotentiometer = mPotentiometer.measure();
+}
+
+bool Application::checkStartConditions() {
+  if (!(mMeasuredVgen >= START_VGEN_MIN)) {
+    std::snprintf(mMessage, sizeof(mMessage), "GEN<%3.1fV", START_VGEN_MIN);
+    return false;
+  } else if (!(mMeasuredVbat >= START_VBAT_MIN)) {
+    std::snprintf(mMessage, sizeof(mMessage), "BAT<%3.1fV", START_VBAT_MIN);
+    return false;
+  } else if (!(mMeasuredVbat <= START_VBAT_MAX)) {
+    std::snprintf(mMessage, sizeof(mMessage), "BAT>%3.1fV", START_VBAT_MAX);
+    return false;
+  } else if (!(mMeasuredVdc <= START_VDC_MAX)) {
+    std::snprintf(mMessage, sizeof(mMessage), "VDC>%3.1fV", START_VDC_MAX);
+    return false;
+  } else {
+    std::snprintf(mMessage, sizeof(mMessage), "Ready");
+    return true;
+  }
+}
+
+bool Application::checkChargeConditions() {
+  if (!(mMeasuredVdc >= CHARGE_VDC_MIN)) {
+    std::snprintf(mMessage, sizeof(mMessage), "VDC<%3.1fV", CHARGE_VDC_MIN);
+    return false;
+  } else if ((!(mPwmDutyCycle >= CHARGE_PWM_MIN)) && (!mIncreasingDutyCycle)) {
+    std::snprintf(mMessage, sizeof(mMessage), "PWM<%3.0fV", CHARGE_PWM_MIN);
+    return false;
+  } else if ((!(mMeasuredIbat >= CHARGE_IBAT_MIN)) && (!mIncreasingDutyCycle)) {
+    std::snprintf(mMessage, sizeof(mMessage), "CUR<%3.1fV", CHARGE_IBAT_MIN);
+    return false;
+  } else {
+    std::snprintf(mMessage, sizeof(mMessage), "Charge...");
+    return true;
+  }
 }
 
 void Application::setPwmDutyCycle(float value) {
