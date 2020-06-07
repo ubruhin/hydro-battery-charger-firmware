@@ -1,3 +1,5 @@
+#pragma once
+
 #include "stm32l0xx_ll_tim.h"
 
 class Pwm {
