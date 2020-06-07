@@ -64,7 +64,7 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
 }
 
 void Application::runDisplayMode() {
-  Enter();
+  enter();
   mRpmMeasurement.enable();
   mDisplay.switchOn();
   mDisplay.backlightOn();
@@ -72,8 +72,8 @@ void Application::runDisplayMode() {
   do {
     // update display for 10s
     for (int i = 0; i < 20; i++) {
-      Measure();
-      UpdateDisplay("U. Bruhin", true);
+      measure();
+      updateDisplay("U. Bruhin", true);
       mSystem.delay(500UL);
       Watchdog::reset();
     }
@@ -82,14 +82,14 @@ void Application::runDisplayMode() {
   mDisplay.backlightOff();
   mDisplay.switchOff();
   mRpmMeasurement.disable();
-  Exit();
+  exit();
 }
 
 void Application::runChargeMode() {
-  Enter();
+  enter();
 
   // check voltages
-  Measure();
+  measure();
   if ((mMeasuredVgen > START_VGEN_MIN) && (mMeasuredVdc < START_VDC_MAX) &&
       (mMeasuredVbat > START_VBAT_MIN) && (mMeasuredVbat < START_VBAT_MAX)) {
     // start charging
@@ -99,32 +99,32 @@ void Application::runChargeMode() {
     mChargeEnable.setHigh();
     mPwm.enable();
     for (int i = 0; i < 20; i++) {
-      Measure();
-      SetPwmDutyCycle(START_PWM_DUTYCYCLE);
-      UpdateDisplay("Starting");
+      measure();
+      setPwmDutyCycle(START_PWM_DUTYCYCLE);
+      updateDisplay("Starting");
       mSystem.delay(500UL);
       Watchdog::reset();
     }
 
     // charge
     do {
-      Measure();
+      measure();
       if (mIncreasingDutyCycle) {
         mLedRed.setHigh();
         if (mMeasuredVbat < CHARGE_VBAT_MAX) {
-          SetPwmDutyCycle(mMeasuredPotentiometer);
+          setPwmDutyCycle(mMeasuredPotentiometer);
         } else {
           mIncreasingDutyCycle = false;
         }
       } else {
         mLedRed.toggle();
         if (mMeasuredVbat > CHARGE_VBAT_MAX) {
-          SetPwmDutyCycle(mPwmDutyCycle - CHARGE_PWM_STEP);
+          setPwmDutyCycle(mPwmDutyCycle - CHARGE_PWM_STEP);
         } else if (mMeasuredVbat < CHARGE_VBAT_MIN) {
           mIncreasingDutyCycle = true;
         }
       }
-      UpdateDisplay(mPowerOffTimer ? "Stopping" : "Charge...");
+      updateDisplay(mPowerOffTimer ? "Stopping" : "Charge...");
       mSystem.delay(500UL);
       Watchdog::reset();
 
@@ -139,7 +139,7 @@ void Application::runChargeMode() {
 
     // stop charging
     mPwm.disable();
-    UpdateDisplay("Finished!");
+    updateDisplay("Finished!");
     System::delay(5000UL);  // avoid overvoltage due to energy in coil
     mChargeEnable.setLow();
     mDisplay.backlightOff();
@@ -147,10 +147,10 @@ void Application::runChargeMode() {
     mRpmMeasurement.disable();
   }
 
-  Exit();
+  exit();
 }
 
-void Application::Enter() {
+void Application::enter() {
   mLedGreen.setHigh();
   mAdc.enable();
   mIncreasingDutyCycle = true;
@@ -158,14 +158,14 @@ void Application::Enter() {
   mPowerOffTimer       = 0U;
 }
 
-void Application::Exit() {
+void Application::exit() {
   mAdc.disable();
   mLedGreen.setLow();
   mLedRed.setLow();
   mSystem.sleep();
 }
 
-void Application::Measure() {
+void Application::measure() {
   mMeasuredIbat          = mIbat.measure();
   mMeasuredVgen          = mVgen.measure();
   mMeasuredVdc           = mVdc.measure();
@@ -173,7 +173,7 @@ void Application::Measure() {
   mMeasuredPotentiometer = mPotentiometer.measure();
 }
 
-void Application::SetPwmDutyCycle(float value) {
+void Application::setPwmDutyCycle(float value) {
   if (mPwmDutyCycle < (value - PWM_DUTY_CYCLE_STEPS)) {
     mPwmDutyCycle += PWM_DUTY_CYCLE_STEPS;
   } else if (mPwmDutyCycle > (value + PWM_DUTY_CYCLE_STEPS)) {
@@ -192,7 +192,7 @@ void Application::SetPwmDutyCycle(float value) {
   mPwm.setDutyCycleNormalized(mPwmDutyCycle);
 }
 
-void Application::UpdateDisplay(const char* msg, bool displayPotentiometer) {
+void Application::updateDisplay(const char* msg, bool displayPotentiometer) {
   mDisplay.print(0, 0, "RPM%5d | GEN%5.1fV", mRpmMeasurement.getRpm(),
                  mMeasuredVgen);
   mDisplay.print(

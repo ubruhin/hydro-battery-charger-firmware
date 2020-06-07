@@ -78,7 +78,7 @@ int main(void) {
   Application application(system, adc, vgen, vdc, vbat, ibat, rpmMeasurement,
                           chargeEnable, pwm, pot, button1, button2, ledGreen,
                           ledYellow, display);
-  if (system.GetWokeUpFromWatchdog() && (button1.read() == false)) {
+  if (system.getWokeUpFromWatchdog() && (button1.read() == false)) {
     application.runChargeMode();
   } else {
     application.runDisplayMode();

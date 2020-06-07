@@ -23,11 +23,11 @@ public:
   void runChargeMode();
 
 private:
-  void Enter();
-  void Exit();
-  void Measure();
-  void SetPwmDutyCycle(float value);
-  void UpdateDisplay(const char* msg, bool displayPotentiometer = false);
+  void enter();
+  void exit();
+  void measure();
+  void setPwmDutyCycle(float value);
+  void updateDisplay(const char* msg, bool displayPotentiometer = false);
 
   System&         mSystem;
   Adc&            mAdc;
