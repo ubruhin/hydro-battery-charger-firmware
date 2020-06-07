@@ -7,8 +7,14 @@
 #include "input_edge_counter.h"
 #include "pwm.h"
 #include "rpm_measurement.h"
+#include "spi.h"
+#include "spi_display.h"
 #include "st7066u_display.h"
 #include "system.h"
+
+#if (PCB_VERSION != 2) && (PCB_VERSION != 3)
+#error "Unknown PCB Version!"
+#endif
 
 static const float VDC_R2     = (4.7F * 100.0F) / (4.7F + 100.0F);
 static const float VDC_SCALE  = (100.0F + VDC_R2) / VDC_R2;
@@ -48,15 +54,29 @@ int main(void) {
   Pwm pwm(TIM2, LL_TIM_CHANNEL_CH1);
   sPwm = &pwm;
   DigitalOut pwmOut(GPIOA, LL_GPIO_PIN_15, false, LL_GPIO_AF_5);
+#if HW_VERSION >= 3
   DigitalOut chargeEnable(GPIOB, LL_GPIO_PIN_7, false);
+#else
+  DigitalOut chargeEnable(GPIOA, LL_GPIO_PIN_11, false);
+#endif
 
   // Buttons/LEDs
+#if HW_VERSION >= 3
   DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_DOWN, false);
   DigitalIn  button2(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN, false);
   DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_4, false);
   DigitalOut ledYellow(GPIOB, LL_GPIO_PIN_5, false);
+#else
+  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_UP, true);
+  DigitalIn  button2(GPIOA, LL_GPIO_PIN_12, LL_GPIO_PULL_UP, true);
+  DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_0, false);
+  DigitalOut ledRed(GPIOB, LL_GPIO_PIN_1, false);
+  DigitalOut ledYellow(GPIOA, LL_GPIO_PIN_7, false);  // Not available
+  System::delay(10);  // button capacitors need some time to charge
+#endif
 
   // Display
+#if HW_VERSION >= 3
   DigitalOut     displayPower(GPIOB, LL_GPIO_PIN_0, true);
   DigitalOut     displayRS(GPIOB, LL_GPIO_PIN_1, false);
   DigitalOut     displayRW(GPIOA, LL_GPIO_PIN_8, false);
@@ -69,10 +89,28 @@ int main(void) {
   ST7066UDisplay display(displayPower, displayRS, displayRW, displayEnable,
                          displayDB4, displayDB5, displayDB6, displayDB7,
                          displayBacklight);
+#else
+  Spi        spi(SPI1);
+  DigitalOut spiSclk(GPIOB, LL_GPIO_PIN_3, true, LL_GPIO_AF_0);
+  DigitalOut spiMiso(GPIOB, LL_GPIO_PIN_4, true, LL_GPIO_AF_0);
+  DigitalOut spiMosi(GPIOB, LL_GPIO_PIN_5, true, LL_GPIO_AF_0);
+  DigitalOut displayCs(GPIOA, LL_GPIO_PIN_8, false);
+  DigitalOut displayNrst(GPIOA, LL_GPIO_PIN_9, false);
+  DigitalOut displayEnable(GPIOA, LL_GPIO_PIN_10, true);
+  SpiDisplay display(spi, displayCs, displayEnable, displayNrst);
+#endif
 
   // Unused pins
+#if HW_VERSION >= 3
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_14, LL_GPIO_MODE_ANALOG);
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG);
+#else
+  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_7, LL_GPIO_MODE_ANALOG);
+  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_ANALOG);
+  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_7, LL_GPIO_MODE_ANALOG);
+  LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_14, LL_GPIO_MODE_ANALOG);
+  LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG);
+#endif
 
   // Application
   Application application(system, adc, vgen, vdc, vbat, ibat, rpmMeasurement,
