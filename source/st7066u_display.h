@@ -15,6 +15,7 @@ public:
                  DigitalOut& enable, DigitalOut& db4, DigitalOut& db5,
                  DigitalOut& db6, DigitalOut& db7, DigitalOut& backlight);
 
+  virtual int  getColumnCount() const { return 20; }
   virtual void switchOn();
   virtual void switchOff();
   virtual void backlightOn();

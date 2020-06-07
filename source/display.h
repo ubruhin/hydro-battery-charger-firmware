@@ -9,6 +9,7 @@ public:
   Display(const Display& other) = delete;
   virtual ~Display() {}
 
+  virtual int  getColumnCount() const                                   = 0;
   virtual void switchOn()                                               = 0;
   virtual void switchOff()                                              = 0;
   virtual void backlightOn()                                            = 0;

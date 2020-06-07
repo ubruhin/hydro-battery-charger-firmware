@@ -15,6 +15,7 @@ public:
   SpiDisplay(Spi& spi, DigitalOut& chipSelect, DigitalOut& enable,
              DigitalOut& nrst);
 
+  virtual int  getColumnCount() const { return 10; }
   virtual void switchOn();
   virtual void switchOff();
   virtual void backlightOn();

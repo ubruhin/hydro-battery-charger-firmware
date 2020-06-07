@@ -192,13 +192,19 @@ void Application::setPwmDutyCycle(float value) {
   mPwm.setDutyCycleNormalized(mPwmDutyCycle);
 }
 
-void Application::updateDisplay(const char* msg, bool displayPotentiometer) {
-  mDisplay.print(0, 0, "RPM%5d | GEN%5.1fV", mRpmMeasurement.getRpm(),
-                 mMeasuredVgen);
-  mDisplay.print(
-      1, 0, "PWM%4.0f%% | VDC%5.1fV",
-      (displayPotentiometer ? mMeasuredPotentiometer : mPwmDutyCycle) * 100.0F,
-      mMeasuredVdc);
-  mDisplay.print(2, 0, "CUR%4.1fA | BAT%5.1fV", mMeasuredIbat, mMeasuredVbat);
-  mDisplay.print(3, 0, "PWR%4.0fW | %9s", mMeasuredVbat * mMeasuredIbat, msg);
+void Application::updateDisplay(const char* msg, bool displayMode) {
+  const float rpm = mRpmMeasurement.getRpm();
+  const float pwm = displayMode ? mMeasuredPotentiometer : mPwmDutyCycle;
+
+  if (mDisplay.getColumnCount() >= 20) {
+    mDisplay.print(0, 0, "RPM%5d | GEN%5.1fV", rpm, mMeasuredVgen);
+    mDisplay.print(1, 0, "PWM%4.0f%% | VDC%5.1fV", pwm * 100.0F, mMeasuredVdc);
+    mDisplay.print(2, 0, "CUR%4.1fA | BAT%5.1fV", mMeasuredIbat, mMeasuredVbat);
+    mDisplay.print(3, 0, "PWR%4.0fW | %9s", mMeasuredVbat * mMeasuredIbat, msg);
+  } else {
+    mDisplay.print(0, 0, "%4d%5.1fV", rpm, mMeasuredVgen);
+    mDisplay.print(1, 0, "%3.0f%%%5.1fV", pwm * 100.0F, mMeasuredVdc);
+    mDisplay.print(2, 0, "%3.1fA %4.1fV", mMeasuredIbat, mMeasuredVbat);
+    mDisplay.print(3, 0, "%10s", msg);
+  }
 }
