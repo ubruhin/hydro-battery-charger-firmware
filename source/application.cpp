@@ -70,6 +70,8 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
 void Application::run(bool displayMode) {
   enter();
 
+  bool start = false;
+
   // display mode
   if (displayMode) {
     mRpmMeasurement.enable();
@@ -84,6 +86,10 @@ void Application::run(bool displayMode) {
         updateDisplay(mMessage, true);
         mSystem.delay(500UL);
         Watchdog::reset();
+        if (mButton2.read()) {
+          start = true;
+          break;
+        }
       }
     } while (mButton1.read() == true);
 
@@ -92,9 +98,14 @@ void Application::run(bool displayMode) {
     mRpmMeasurement.disable();
   }
 
-  // check voltages
-  measure();
-  if (checkStartConditions()) {
+  // check start conditions
+  if (!start) {
+    measure();
+    start = checkStartConditions();
+  }
+
+  // charge mode
+  if (start) {
     // start charging
     mRpmMeasurement.enable();
     mDisplay.switchOn();
