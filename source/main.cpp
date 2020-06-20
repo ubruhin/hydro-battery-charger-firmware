@@ -116,11 +116,8 @@ int main(void) {
   Application application(system, adc, vgen, vdc, vbat, ibat, rpmMeasurement,
                           chargeEnable, pwm, pot, button1, button2, ledGreen,
                           ledYellow, display);
-  if (system.getWokeUpFromWatchdog() && (button1.read() == false)) {
-    application.runChargeMode();
-  } else {
-    application.runDisplayMode();
-  }
+  const bool displayMode = (!system.getWokeUpFromWatchdog()) || button1.read();
+  application.run(displayMode);
 
   // this line should actually never be reached... if it is, watchdog will reset
   while (1) {

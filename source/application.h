@@ -21,8 +21,7 @@ public:
               DigitalIn& button1, DigitalIn& button2, DigitalOut& ledGreen,
               DigitalOut& ledRed, Display& display);
 
-  void runDisplayMode();
-  void runChargeMode();
+  void run(bool displayMode);
 
 private:
   void enter();

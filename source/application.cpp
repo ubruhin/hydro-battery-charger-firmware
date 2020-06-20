@@ -67,31 +67,30 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
     mMessage("") {
 }
 
-void Application::runDisplayMode() {
+void Application::run(bool displayMode) {
   enter();
-  mRpmMeasurement.enable();
-  mDisplay.switchOn();
-  mDisplay.backlightOn();
 
-  do {
-    // update display for 10s
-    for (int i = 0; i < 20; i++) {
-      measure();
-      checkStartConditions();  // Updates mMessage
-      updateDisplay(mMessage, true);
-      mSystem.delay(500UL);
-      Watchdog::reset();
-    }
-  } while (mButton1.read() == true);
+  // display mode
+  if (displayMode) {
+    mRpmMeasurement.enable();
+    mDisplay.switchOn();
+    mDisplay.backlightOn();
 
-  mDisplay.backlightOff();
-  mDisplay.switchOff();
-  mRpmMeasurement.disable();
-  exit();
-}
+    do {
+      // update display for 10s
+      for (int i = 0; i < 20; i++) {
+        measure();
+        checkStartConditions();  // Updates mMessage
+        updateDisplay(mMessage, true);
+        mSystem.delay(500UL);
+        Watchdog::reset();
+      }
+    } while (mButton1.read() == true);
 
-void Application::runChargeMode() {
-  enter();
+    mDisplay.backlightOff();
+    mDisplay.switchOff();
+    mRpmMeasurement.disable();
+  }
 
   // check voltages
   measure();
