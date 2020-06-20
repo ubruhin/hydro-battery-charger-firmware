@@ -21,7 +21,6 @@
       c_user_include_directories="$(ProjectDir)/source;$(ProjectDir)/CMSIS_4/CMSIS/Include;$(ProjectDir)/STM32L0xx/CMSIS/Device/Include;$(ProjectDir)/STM32L0xx_HAL_Driver/Inc"
       debug_register_definition_file="$(ProjectDir)/STM32L0x1_Registers.xml"
       debug_target_connection="J-Link"
-      gcc_debugging_level="Level 3"
       gcc_entry_point="Reset_Handler"
       linker_memory_map_file="$(ProjectDir)/STM32L071KZ_MemoryMap.xml"
       linker_section_placement_file="$(ProjectDir)/flash_placement.xml"
@@ -70,24 +69,21 @@
       filter="*.c;*.cpp;*.h"
       path="source"
       recurse="Yes" />
-    <configuration
-      Name="Debug V2"
-      c_preprocessor_definitions="PCB_VERSION=2" />
-    <configuration
-      Name="Debug V3"
-      c_preprocessor_definitions="PCB_VERSION=3" />
   </project>
   <configuration
+    Name="Debug V2"
+    c_preprocessor_definitions="PCB_VERSION=2" />
+  <configuration
     Name="Debug V3"
-    c_preprocessor_definitions="DEBUG"
-    gcc_debugging_level="Level 3"
-    gcc_optimization_level="None" />
+    c_preprocessor_definitions="PCB_VERSION=3" />
   <configuration
     Name="Common"
     gcc_c_language_standard="c11"
     gcc_cplusplus_language_standard="c++11"
     gcc_enable_all_warnings="Yes"
     linker_printf_fp_enabled="Float"
-    linker_printf_width_precision_supported="No" />
-  <configuration Name="Debug V2" />
+    linker_printf_width_precision_supported="No"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gcc_optimization_level="None" />
 </solution>

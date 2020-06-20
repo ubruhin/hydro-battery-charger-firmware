@@ -54,14 +54,14 @@ int main(void) {
   Pwm pwm(TIM2, LL_TIM_CHANNEL_CH1);
   sPwm = &pwm;
   DigitalOut pwmOut(GPIOA, LL_GPIO_PIN_15, false, LL_GPIO_AF_5);
-#if HW_VERSION >= 3
+#if PCB_VERSION >= 3
   DigitalOut chargeEnable(GPIOB, LL_GPIO_PIN_7, false);
 #else
   DigitalOut chargeEnable(GPIOA, LL_GPIO_PIN_11, false);
 #endif
 
   // Buttons/LEDs
-#if HW_VERSION >= 3
+#if PCB_VERSION >= 3
   DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_DOWN, false);
   DigitalIn  button2(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN, false);
   DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_4, false);
@@ -76,7 +76,7 @@ int main(void) {
 #endif
 
   // Display
-#if HW_VERSION >= 3
+#if PCB_VERSION >= 3
   DigitalOut     displayPower(GPIOB, LL_GPIO_PIN_0, true);
   DigitalOut     displayRS(GPIOB, LL_GPIO_PIN_1, false);
   DigitalOut     displayRW(GPIOA, LL_GPIO_PIN_8, false);
@@ -101,7 +101,7 @@ int main(void) {
 #endif
 
   // Unused pins
-#if HW_VERSION >= 3
+#if PCB_VERSION >= 3
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_14, LL_GPIO_MODE_ANALOG);
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG);
 #else
