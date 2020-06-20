@@ -64,14 +64,13 @@ int main(void) {
 #if PCB_VERSION >= 3
   DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_DOWN, false);
   DigitalIn  button2(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN, false);
-  DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_4, false);
-  DigitalOut ledYellow(GPIOB, LL_GPIO_PIN_5, false);
+  DigitalOut powerLed(GPIOB, LL_GPIO_PIN_4, false);   // green
+  DigitalOut statusLed(GPIOB, LL_GPIO_PIN_5, false);  // yellow
 #else
   DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_UP, true);
   DigitalIn  button2(GPIOA, LL_GPIO_PIN_12, LL_GPIO_PULL_UP, true);
-  DigitalOut ledGreen(GPIOB, LL_GPIO_PIN_0, false);
-  DigitalOut ledRed(GPIOB, LL_GPIO_PIN_1, false);
-  DigitalOut ledYellow(GPIOA, LL_GPIO_PIN_7, false);  // Not available
+  DigitalOut powerLed(GPIOB, LL_GPIO_PIN_0, false);  // green
+  DigitalOut statusLed(GPIOB, LL_GPIO_PIN_1, false);  // red
   System::delay(10);  // button capacitors need some time to charge
 #endif
 
@@ -114,9 +113,9 @@ int main(void) {
 
   // Application
   Application application(system, adc, vgen, vdc, vbat, ibat, rpmMeasurement,
-                          chargeEnable, pwm, pot, button1, button2, ledGreen,
-                          ledYellow, display);
-  const bool displayMode = (!system.getWokeUpFromWatchdog()) || button1.read();
+                          chargeEnable, pwm, pot, button1, button2, powerLed,
+                          statusLed, display);
+  const bool  displayMode = (!system.getWokeUpFromWatchdog()) || button1.read();
   application.run(displayMode);
 
   // this line should actually never be reached... if it is, watchdog will reset

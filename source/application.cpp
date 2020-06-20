@@ -39,7 +39,7 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
                          RpmMeasurement& rpmMeasurement,
                          DigitalOut& chargeEnable, Pwm& pwm, AnalogIn& pot,
                          DigitalIn& button1, DigitalIn& button2,
-                         DigitalOut& ledGreen, DigitalOut& ledRed,
+                         DigitalOut& powerLed, DigitalOut& statusLed,
                          Display& display)
   : mSystem(system),
     mAdc(adc),
@@ -53,8 +53,8 @@ Application::Application(System& system, Adc& adc, AnalogIn& vgen,
     mPotentiometer(pot),
     mButton1(button1),
     mButton2(button2),
-    mLedGreen(ledGreen),
-    mLedRed(ledRed),
+    mPowerLed(powerLed),
+    mStatusLed(statusLed),
     mDisplay(display),
     mMeasuredVgen(0.0F),
     mMeasuredVdc(0.0F),
@@ -129,14 +129,14 @@ void Application::run(bool displayMode) {
         mPowerOffTimer++;
       }
       if (mIncreasingDutyCycle) {
-        mLedRed.setHigh();
+        mStatusLed.setHigh();
         if (mMeasuredVbat < CHARGE_VBAT_MAX) {
           setPwmDutyCycle(mMeasuredPotentiometer);
         } else {
           mIncreasingDutyCycle = false;
         }
       } else {
-        mLedRed.toggle();
+        mStatusLed.toggle();
         if (mMeasuredVbat > CHARGE_VBAT_MAX) {
           setPwmDutyCycle(mPwmDutyCycle - CHARGE_PWM_STEP);
         } else if (mMeasuredVbat < CHARGE_VBAT_MIN) {
@@ -164,7 +164,7 @@ void Application::run(bool displayMode) {
 }
 
 void Application::enter() {
-  mLedGreen.setHigh();
+  mPowerLed.setHigh();
   mAdc.enable();
   mIncreasingDutyCycle = true;
   mPwmDutyCycle        = 0.0F;
@@ -173,8 +173,8 @@ void Application::enter() {
 
 void Application::exit() {
   mAdc.disable();
-  mLedGreen.setLow();
-  mLedRed.setLow();
+  mPowerLed.setLow();
+  mStatusLed.setLow();
   mSystem.sleep();
 }
 

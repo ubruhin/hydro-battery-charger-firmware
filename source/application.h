@@ -18,7 +18,7 @@ public:
   Application(System& system, Adc& adc, AnalogIn& vgen, AnalogIn& vdc,
               AnalogIn& vbat, AnalogIn& ibat, RpmMeasurement& rpmMeasurement,
               DigitalOut& chargeEnable, Pwm& pwm, AnalogIn& pot,
-              DigitalIn& button1, DigitalIn& button2, DigitalOut& ledGreen,
+              DigitalIn& button1, DigitalIn& button2, DigitalOut& powerLed,
               DigitalOut& ledRed, Display& display);
 
   void run(bool displayMode);
@@ -44,8 +44,8 @@ private:
   AnalogIn&       mPotentiometer;
   DigitalIn&      mButton1;
   DigitalIn&      mButton2;
-  DigitalOut&     mLedGreen;
-  DigitalOut&     mLedRed;
+  DigitalOut&     mPowerLed;
+  DigitalOut&     mStatusLed;
   Display&        mDisplay;
 
   float mMeasuredVgen;
