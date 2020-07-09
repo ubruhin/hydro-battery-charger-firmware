@@ -38,6 +38,7 @@ System::System() : mWokeUpFromWatchdog(false) {
   // Enable GPIO clocks
   RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
   RCC->IOPENR |= RCC_IOPENR_GPIOBEN;
+  RCC->IOPENR |= RCC_IOPENR_GPIOCEN;
 
   // Enable SPI clock
   RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;

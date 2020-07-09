@@ -11,9 +11,9 @@ class ST7066UDisplay : public Display {
 public:
   ST7066UDisplay()                            = delete;
   ST7066UDisplay(const ST7066UDisplay& other) = delete;
-  ST7066UDisplay(DigitalOut& power, DigitalOut& rs, DigitalOut& rw,
-                 DigitalOut& enable, DigitalOut& db4, DigitalOut& db5,
-                 DigitalOut& db6, DigitalOut& db7, DigitalOut& backlight);
+  ST7066UDisplay(DigitalOut& power, DigitalOut& rs, DigitalOut& enable,
+                 DigitalOut& db4, DigitalOut& db5, DigitalOut& db6,
+                 DigitalOut& db7, DigitalOut& backlight);
 
   virtual int  getColumnCount() const { return 20; }
   virtual void switchOn();
@@ -37,7 +37,6 @@ private:
 
   DigitalOut& mPower;
   DigitalOut& mRS;
-  DigitalOut& mRW;
   DigitalOut& mEnable;
   DigitalOut& mDB4;
   DigitalOut& mDB5;

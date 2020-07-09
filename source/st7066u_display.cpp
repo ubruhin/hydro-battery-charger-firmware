@@ -7,14 +7,12 @@
 #include <cstring>
 
 ST7066UDisplay::ST7066UDisplay(DigitalOut& power, DigitalOut& rs,
-                               DigitalOut& rw, DigitalOut& enable,
-                               DigitalOut& db4, DigitalOut& db5,
-                               DigitalOut& db6, DigitalOut& db7,
-                               DigitalOut& backlight)
+                               DigitalOut& enable, DigitalOut& db4,
+                               DigitalOut& db5, DigitalOut& db6,
+                               DigitalOut& db7, DigitalOut& backlight)
   : Display(),
     mPower(power),
     mRS(rs),
-    mRW(rw),
     mEnable(enable),
     mDB4(db4),
     mDB5(db5),
@@ -63,7 +61,6 @@ void ST7066UDisplay::switchOff() {
   mDB5.setLow();
   mDB6.setLow();
   mDB7.setLow();
-  mRW.setLow();
   mRS.setLow();
   mEnable.setLow();
   mBacklight.setLow();
@@ -125,7 +122,6 @@ void ST7066UDisplay::writeCmd(uint8_t cmd) {
 }
 
 void ST7066UDisplay::write(const uint8_t* data, uint32_t len) {
-  mRW.setLow();
   for (uint32_t i = 0U; i < len; ++i) {
     write4bit(static_cast<uint8_t>(data[i] >> 4U));
     sendEnablePulse();

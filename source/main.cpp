@@ -11,8 +11,9 @@
 #include "spi_display.h"
 #include "st7066u_display.h"
 #include "system.h"
+#include "valve.h"
 
-#if (PCB_VERSION != 2) && (PCB_VERSION != 3)
+#if (PCB_VERSION != 3) && (PCB_VERSION != 4)
 #error "Unknown PCB Version!"
 #endif
 
@@ -54,59 +55,46 @@ int main(void) {
   Pwm pwm(TIM2, LL_TIM_CHANNEL_CH1);
   sPwm = &pwm;
   DigitalOut pwmOut(GPIOA, LL_GPIO_PIN_15, false, LL_GPIO_AF_5);
-#if PCB_VERSION >= 3
   DigitalOut chargeEnable(GPIOB, LL_GPIO_PIN_7, false);
-#else
-  DigitalOut chargeEnable(GPIOA, LL_GPIO_PIN_11, false);
-#endif
 
   // Buttons/LEDs
-#if PCB_VERSION >= 3
   DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_DOWN, false);
   DigitalIn  button2(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN, false);
   DigitalOut powerLed(GPIOB, LL_GPIO_PIN_4, false);   // green
   DigitalOut statusLed(GPIOB, LL_GPIO_PIN_5, false);  // yellow
-#else
-  DigitalIn  button1(GPIOA, LL_GPIO_PIN_0, LL_GPIO_PULL_UP, true);
-  DigitalIn  button2(GPIOA, LL_GPIO_PIN_12, LL_GPIO_PULL_UP, true);
-  DigitalOut powerLed(GPIOB, LL_GPIO_PIN_0, false);  // green
-  DigitalOut statusLed(GPIOB, LL_GPIO_PIN_1, false);  // red
-  System::delay(10);  // button capacitors need some time to charge
-#endif
 
   // Display
-#if PCB_VERSION >= 3
-  DigitalOut     displayPower(GPIOB, LL_GPIO_PIN_0, true);
-  DigitalOut     displayRS(GPIOB, LL_GPIO_PIN_1, false);
-  DigitalOut     displayRW(GPIOA, LL_GPIO_PIN_8, false);
-  DigitalOut     displayEnable(GPIOA, LL_GPIO_PIN_9, false);
-  DigitalOut     displayDB4(GPIOA, LL_GPIO_PIN_10, false);
-  DigitalOut     displayDB5(GPIOA, LL_GPIO_PIN_11, false);
-  DigitalOut     displayDB6(GPIOA, LL_GPIO_PIN_12, false);
-  DigitalOut     displayDB7(GPIOB, LL_GPIO_PIN_3, false);
-  DigitalOut     displayBacklight(GPIOA, LL_GPIO_PIN_7, false);
-  ST7066UDisplay display(displayPower, displayRS, displayRW, displayEnable,
-                         displayDB4, displayDB5, displayDB6, displayDB7,
-                         displayBacklight);
+  DigitalOut displayPower(GPIOB, LL_GPIO_PIN_0, true);
+  DigitalOut displayRS(GPIOB, LL_GPIO_PIN_1, false);
+  DigitalOut displayEnable(GPIOA, LL_GPIO_PIN_9, false);
+  DigitalOut displayDB4(GPIOA, LL_GPIO_PIN_10, false);
+  DigitalOut displayDB5(GPIOA, LL_GPIO_PIN_11, false);
+  DigitalOut displayDB6(GPIOA, LL_GPIO_PIN_12, false);
+#if PCB_VERSION >= 4
+  DigitalOut displayDB7(GPIOA, LL_GPIO_PIN_8, false);
+  DigitalOut displayBacklight(GPIOB, LL_GPIO_PIN_3, false);
 #else
-  Spi        spi(SPI1);
-  DigitalOut spiSclk(GPIOB, LL_GPIO_PIN_3, true, LL_GPIO_AF_0);
-  DigitalOut spiMiso(GPIOB, LL_GPIO_PIN_4, true, LL_GPIO_AF_0);
-  DigitalOut spiMosi(GPIOB, LL_GPIO_PIN_5, true, LL_GPIO_AF_0);
-  DigitalOut displayCs(GPIOA, LL_GPIO_PIN_8, false);
-  DigitalOut displayNrst(GPIOA, LL_GPIO_PIN_9, false);
-  DigitalOut displayEnable(GPIOA, LL_GPIO_PIN_10, true);
-  SpiDisplay display(spi, displayCs, displayEnable, displayNrst);
+  DigitalOut displayDB7(GPIOB, LL_GPIO_PIN_3, false);
+  DigitalOut displayBacklight(GPIOA, LL_GPIO_PIN_7, false);
+  DigitalOut displayRW(GPIOA, LL_GPIO_PIN_8, false);
+#endif
+  ST7066UDisplay display(displayPower, displayRS, displayEnable, displayDB4,
+                         displayDB5, displayDB6, displayDB7, displayBacklight);
+
+  // Switch
+#if PCB_VERSION >= 4
+  DigitalIn  autoStartSwitch(GPIOA, LL_GPIO_PIN_7, LL_GPIO_PULL_UP, true);
+#endif
+
+  // Valve
+#if PCB_VERSION >= 4
+  DigitalOut valvePower(GPIOC, LL_GPIO_PIN_14, false);
+  DigitalOut valveOpen(GPIOC, LL_GPIO_PIN_15, false);
+  Valve      valve(valvePower, valveOpen);
 #endif
 
   // Unused pins
-#if PCB_VERSION >= 3
-  LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_14, LL_GPIO_MODE_ANALOG);
-  LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG);
-#else
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_7, LL_GPIO_MODE_ANALOG);
-  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_ANALOG);
-  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_7, LL_GPIO_MODE_ANALOG);
+#if PCB_VERSION == 3
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_14, LL_GPIO_MODE_ANALOG);
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG);
 #endif
