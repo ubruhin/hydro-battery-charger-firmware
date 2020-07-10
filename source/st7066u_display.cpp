@@ -111,12 +111,15 @@ void ST7066UDisplay::print(const char* format, va_list args) {
 
 void ST7066UDisplay::writeData(const uint8_t* data, uint32_t len) {
   mRS.setHigh();
+  tinyDelay();
   write(data, len);
 }
 
 void ST7066UDisplay::writeCmd(uint8_t cmd) {
   mRS.setLow();
+  tinyDelay();
   write(&cmd, 1U);
+  System::delay(2);
   while (readStatus() & FLAG_BUSY)
     ;
 }
@@ -128,6 +131,7 @@ void ST7066UDisplay::write(const uint8_t* data, uint32_t len) {
     sendEnablePulse();
     write4bit(static_cast<uint8_t>(data[i] & 0x0FU));
     sendEnablePulse();
+    tinyDelay();
   }
 }
 
@@ -148,11 +152,19 @@ void ST7066UDisplay::write1bit(DigitalOut& io, uint8_t data) {
 
 void ST7066UDisplay::sendEnablePulse() {
   mEnable.setHigh();
-  System::delay(1);
+  tinyDelay();
   mEnable.setLow();
-  System::delay(1);
 }
 
 uint8_t ST7066UDisplay::readStatus() {
   return 0x00U;  // Not supported yet
 }
+
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+void        ST7066UDisplay::tinyDelay() {
+  for (volatile uint32_t i = 0U; i < 20U; ++i) {
+    __NOP();
+  }
+}
+#pragma GCC pop_options

@@ -33,6 +33,7 @@ private:
   void    write1bit(DigitalOut& io, uint8_t data);
   void    sendEnablePulse();
   uint8_t readStatus();
+  void    tinyDelay();
 
   DigitalOut& mPower;
   DigitalOut& mRS;
