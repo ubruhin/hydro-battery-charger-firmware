@@ -10,6 +10,7 @@
 #include "spi.h"
 #include "spi_display.h"
 #include "st7066u_display.h"
+#include "stm32l0xx_ll_cortex.h"
 #include "system.h"
 #include "valve.h"
 
@@ -23,7 +24,9 @@ static const float VGEN_SCALE = (100.0F + 2.2F) / 2.2F;
 static const float VBAT_SCALE = (100.0F + 10.0F) / 10.0F;
 static const float IBAT_SCALE = 1.0F / 0.1F;
 
-static Pwm* sPwm = nullptr;
+static Pwm*            sPwm            = nullptr;
+static RpmMeasurement* sRpmMeasurement = nullptr;
+static Application*    sApplication    = nullptr;
 
 static void comparatorCallback() {
   if (sPwm) {
@@ -50,6 +53,7 @@ int main(void) {
   DigitalIn rpmMeasurementPin(GPIOA, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN, false);
   InputEdgeCounter rpmEdgeCounter(LL_EXTI_LINE_6);
   RpmMeasurement   rpmMeasurement(rpmEdgeCounter);
+  sRpmMeasurement = &rpmMeasurement;
 
   // Charge controller
   Pwm pwm(TIM2, LL_TIM_CHANNEL_CH1);
@@ -84,6 +88,9 @@ int main(void) {
   // Switch
 #if PCB_VERSION >= 4
   DigitalIn  autoStartSwitch(GPIOA, LL_GPIO_PIN_7, LL_GPIO_PULL_UP, true);
+  DigitalIn* autoStartSwitchPtr = &autoStartSwitch;
+#else
+  DigitalIn* autoStartSwitchPtr = nullptr;
 #endif
 
   // Valve
@@ -91,6 +98,9 @@ int main(void) {
   DigitalOut valvePower(GPIOC, LL_GPIO_PIN_14, false);
   DigitalOut valveOpen(GPIOC, LL_GPIO_PIN_15, false);
   Valve      valve(valvePower, valveOpen);
+  Valve*     valvePtr = &valve;
+#else
+  Valve*     valvePtr           = nullptr;
 #endif
 
   // Unused pins
@@ -99,14 +109,29 @@ int main(void) {
   LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG);
 #endif
 
+  // SysTick
+  SysTick->VAL  = 0U;
+  SysTick->LOAD = 4000UL;  // 1ms
+  SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk;
+
   // Application
   Application application(system, adc, vgen, vdc, vbat, ibat, rpmMeasurement,
-                          chargeEnable, pwm, pot, button1, button2, powerLed,
-                          statusLed, display);
-  const bool  displayMode = (!system.getWokeUpFromWatchdog()) || button1.read();
+                          valvePtr, chargeEnable, pwm, pot, button1, button2,
+                          autoStartSwitchPtr, powerLed, statusLed, display);
+  sApplication           = &application;
+  const bool displayMode = (!system.getWokeUpFromWatchdog()) || button1.read();
   application.run(displayMode);
 
   // this line should actually never be reached... if it is, watchdog will reset
   while (1) {
+  }
+}
+
+extern "C" void SysTick_Handler() {
+  if (sRpmMeasurement) {
+    sRpmMeasurement->sysTick();
+  }
+  if (sApplication) {
+    sApplication->sysTick();
   }
 }
